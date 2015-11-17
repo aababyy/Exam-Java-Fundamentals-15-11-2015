@@ -1,0 +1,113 @@
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+public class P04_LogParser {
+    public static void main(String[] args) {
+        TreeMap<String, Integer> count = new TreeMap<>();
+        TreeMap<String, List<String>> crticals = new TreeMap<>();
+        TreeMap<String, List<String>> warnings = new TreeMap<>();
+        Scanner scan = new Scanner(System.in);
+        String line = scan.nextLine();
+        while (!line.equals("END")) {
+            Pattern log = Pattern.compile("\\{\"Project\":\\s\\[\"(.+?)\"\\],\\s\"Type\":\\s\\[\"(.+?)\"\\],\\s\"Message\":\\s\\[\"(.+?)\"\\]}");
+            Matcher matcher = log.matcher(line);
+            matcher.find();
+            String name = matcher.group(1);
+            String message = matcher.group(3);
+            count.compute(name, (k, v) -> v == null ? 1 : v + 1);
+            if (matcher.group(2).equals("Critical")) {
+                if (!crticals.containsKey(name)) {
+                    List<String> y = new ArrayList<>();
+                    y.add(message);
+                    crticals.put(name, y);
+                } else {
+                    List<String> y = crticals.get(name);
+                    y.add(message);
+                    crticals.put(name, y);
+                }
+            } else { //if (matcher.group(2).equals("Warning")) {
+                if (!warnings.containsKey(name)) {
+                    List<String> y = new ArrayList<>();
+                    y.add(message);
+                    warnings.put(name, y);
+                } else {
+                    List<String> y = warnings.get(name);
+                    y.add(message);
+                    warnings.put(name, y);
+                }
+            }
+            line = scan.nextLine();
+        }
+        Map<String, Integer> sortedCount = count.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                        (e1, e2) -> e1, LinkedHashMap::new));
+
+        int m = sortedCount.size();
+        for(Map.Entry<String, Integer> entry : sortedCount.entrySet()) {
+            System.out.println(entry.getKey() + ":");
+            System.out.println("Total Errors: " + entry.getValue());
+
+            if (!crticals.containsKey(entry.getKey())) {
+                System.out.println("Critical: " + 0);
+            } else {
+                List<String> y = crticals.get(entry.getKey());
+                System.out.println("Critical: " + y.size());
+            }
+
+            if (!warnings.containsKey(entry.getKey())) {
+                System.out.println("Warnings: " + 0);
+            } else {
+                List<String> y = warnings.get(entry.getKey());
+                System.out.println("Warnings: " + y.size());
+            }
+
+            System.out.println("Critical Messages:");
+            if (!crticals.containsKey(entry.getKey())) {
+                System.out.println("--->None");
+            } else {
+                List<String> y = crticals.get(entry.getKey());
+                Collections.sort(y);
+                List<String> yy = sortByLengthAscending(y);
+                for (String s : yy) {
+                    System.out.println("--->" + s);
+                }
+            }
+
+            System.out.println("Warning Messages:");
+            if (!warnings.containsKey(entry.getKey())) {
+                System.out.println("--->None");
+            } else {
+                List<String> y = warnings.get(entry.getKey());
+                Collections.sort(y);
+                List<String> yy = sortByLengthAscending(y);
+                for (String s : yy) {
+                    System.out.println("--->" + s);
+                }
+            }
+            if (m > 1) {
+                System.out.println();
+            }
+            m--;
+        }
+    }
+
+    static List<String> sortByLengthAscending (List<String> y) {
+        List<String> yy = new ArrayList<>();
+        while (y.size() > 0) {
+            int min = Integer.MAX_VALUE;
+            int ind = 0;
+            for (int i = 0; i < y.size(); i++) {
+                if (min > y.get(i).length()) {
+                    min = y.get(i).length();
+                    ind = i;
+                }
+            }
+            yy.add(y.get(ind));
+            y.remove(ind);
+        }
+        return yy;
+    }
+}
