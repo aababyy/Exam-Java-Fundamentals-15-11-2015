@@ -1,0 +1,112 @@
+import java.util.Arrays;
+import java.util.Scanner;
+
+public class P03_RM1 {
+    public static void main(String[] args) {
+        Scanner scan = new Scanner(System.in);
+        String[] d = scan.nextLine().split(" ");
+        int r = Integer.parseInt(d[0]);
+        int c = Integer.parseInt(d[1]);
+        int[][] matrix = fillMatrix(r, c);
+
+        int n = Integer.parseInt(scan.nextLine());
+        for (int i = 0; i < n; i++) {
+            String[] line = scan.nextLine().split(" ");
+            int vector = Integer.parseInt(line[0]);
+            String direction = line[1];
+            int rotation = Integer.parseInt(line[2]);
+            matrix = move(matrix, vector, direction, rotation);
+        }
+        int count = 0;
+        for (int i = 0; i < r; i++) {
+            for (int j = 0; j < c; j++) {
+                count = count + 1;
+                if (matrix[i][j] == count) {
+                    System.out.println("No swap required");
+                } else {
+                    int[] coord = findOriginal(matrix, i, count);
+                    System.out.println("Swap (" + i + ", " + j + ") with (" + coord[0] + ", " + coord[1] + ")");
+                    matrix[coord[0]][coord[1]] = matrix[i][j];
+                    matrix[i][j] = count;
+                }
+            }
+        }
+    }
+
+    static int[][] fillMatrix (int a, int b) {
+        int[][] m = new int[a][b];
+        int count = 0;
+        for (int i = 0; i < a; i++) {
+            for (int j = 0; j < b; j++) {
+                count = count + 1;
+                m[i][j] = count;
+            }
+        }
+        return m;
+    }
+
+    static int[][] move(int[][] m, int v, String d, int r) {
+        if (d.equals("left") || d.equals("right")) {
+            if (r >= m[v].length) {
+                r = r % m[v].length;
+            }
+            if (r > 0) {
+                int[] n = rotate(m[v], d, r);
+                for (int i = 0; i < m[v].length; i++) {
+                    m[v][i] = n[i];
+                }
+            }
+        } else { //if (d.equals("up") || d.equals("down")) {
+            if (r >= m.length) {
+                r = r % m.length;
+            }
+            if (r > 0) {
+                int[] n = new int[m.length];
+                for (int i = 0; i < m.length; i++) {
+                    n[i] = (m[i][v]);
+                }
+                n = rotate(n, d, r);
+                for (int i = 0; i < m.length; i++) {
+                    m[i][v] = n[i];
+                }
+            }
+        }
+        return m;
+    }
+
+    static int[] rotate(int[] n, String d, int r) {
+        int[] copy = Arrays.copyOf(n, n.length);
+        if (d.equals("left") || d.equals("up")) {
+            for (int i = 0; i < n.length; i++) {
+                if (i < n.length - r) {
+                    n[i] = copy[i + r];
+                } else {
+                    n[i] = copy[i - (n.length - r)];
+                }
+            }
+        } else { //if (d.equals("right") || d.equals("down")) {
+            for (int i = 0; i < n.length; i++) {
+                if (i < r) {
+                    n[i] = copy[i + (n.length - r)];
+                } else {
+                    n[i] = copy[i - r];
+                }
+            }
+        }
+        return n;
+    }
+
+    static int[] findOriginal(int[][] m, int a, int c) {
+        int[] coord = new int[2];
+        for (int i = a; i < m.length; i++) {
+            for (int j = 0; j < m[i].length; j++) {
+                if (m[i][j] == c) {
+                    coord[0] = i;
+                    coord[1] = j;
+                    break;
+                }
+            }
+        }
+        return coord;
+    }
+}
