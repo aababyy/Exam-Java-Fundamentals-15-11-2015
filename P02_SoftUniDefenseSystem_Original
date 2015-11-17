@@ -1,0 +1,24 @@
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class P02_SoftUniDefenseSystem {
+    public static void main(String[] args) {
+        double total = 0;
+        Scanner scan = new Scanner(System.in);
+        String line = scan.nextLine();
+        while (!line.equals("OK KoftiShans")) {
+            Pattern booze = Pattern.compile("([A-Z]{1}[a-z]+).*?([A-Z]{1}[a-z]*[A-Z]{1}).*?([1-9]+[0-9]*L)");
+            Matcher matcher = booze.matcher(line);
+            while (matcher.find()) {
+                String q = matcher.group(3).substring(0, matcher.group(3).length() - 1);
+                int quantity = Integer.parseInt(q);
+                total = total + quantity;
+                System.out.println(matcher.group(1) + " brought " + q + " liters of " + matcher.group(2).toLowerCase() +"!");
+            }
+            line = scan.nextLine();
+        }
+        total = total / 1000;
+        System.out.printf("%.3f softuni liters\n", total);
+    }
+}
